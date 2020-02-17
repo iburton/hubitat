@@ -95,7 +95,7 @@ metadata {
       type: "text",
       name: "requestedGroup2",
       title: "Association Group 2 Members (Max of 5):",
-      description: "<br/><br/>Devices in group 2 will turn on/off when the switch is turned on or off.<br/><br/>" +
+      description: "<br/>Devices in group 2 will turn on/off when the switch is turned on or off.<br/><br/>" +
                    "Devices are entered as a comma delimited list of IDs in hexadecimal format.",
       required: false
     )
@@ -104,7 +104,7 @@ metadata {
       type: "text",
       name: "requestedGroup3",
       title: "Association Group 3 Members (Max of 4):",
-      description: "<br/><br/>Devices in group 3 will turn on/off when the switch is double tapped up or down.<br/><br/>" +
+      description: "<br/>Devices in group 3 will turn on/off when the switch is double tapped up or down.<br/><br/>" +
                    "Devices are entered as a comma delimited list of IDs in hexadecimal format.",
       required: false
     )
@@ -141,7 +141,7 @@ def log(String level, String message) {
     log.info "$header $message"
   } else if (level == "WARN") {
     log.warn "$header $message"
-  } else {
+  } else if (level == "ERROR") {
     log.error "$header $message"
   }
 }

@@ -8,6 +8,7 @@
  *  2.4.0 (2020-02-16) - Forked from Jason Bottjen (Blotched1). Cleaned code in preparation for standardization.
  *  2.4.1 (2020-02-16) - Added Flash and version GetVersionReport functionality
  *  2.4.2 (2020-02-17) - Reformatted to align with new Fan Control
+ *  2.4.3 (2020-02-17) - Fixed bug in logging that caused debug/info to log as error when disabled 
  */
 
 metadata {
@@ -104,7 +105,7 @@ def log(String level, String message) {
     log.info "$header $message"
   } else if (level == "WARN") {
     log.warn "$header $message"
-  } else {
+  } else if (level == "ERROR") {
     log.error "$header $message"
   }
 }
