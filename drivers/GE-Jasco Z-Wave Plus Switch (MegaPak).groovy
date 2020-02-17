@@ -1,12 +1,12 @@
 /**
- *  IMPORT URL: TODO: Enter Github RAW Url
+ *  IMPORT URL: https://raw.githubusercontent.com/iburton/hubitat/master/drivers/GE-Jasco%20Z-Wave%20Plus%20Switch%20(MegaPak).groovy
  *
  *  GE Z-Wave Plus Switch
  *
  *  History
  *  -------------------------------------------------------------------------------------------------------------------
  *  2.4.0 (2020-02-16) - Forked from Jason Bottjen (Blotched1). Cleaned code in preparation for standardization.
- *  2.4.1 (2020-02-16) - Added Flash and Version GetVersionReport functionality
+ *  2.4.1 (2020-02-16) - Added Flash and version GetVersionReport functionality
  */
 
 metadata {
@@ -25,13 +25,6 @@ metadata {
   }
 
   preferences {
-    input (
-      type: "paragraph",
-      element: "paragraph",
-      title: "Switch General Settings",
-      description: ""
-    )
-
     input (
       type: "enum",
       element: "paramLED", 
@@ -61,34 +54,22 @@ metadata {
     )
 
     input (
-      type: "paragraph",
-      element: "paragraph",
-      title: "Association Groups",
-      description: "Devices in group 2 will turn on/off when the switch is turned on or off.\n\n" +
-                   "Devices in group 3 will turn on/off when the switch is double tapped up or down.\n\n" +
-                   "Devices are entered as a comma delimited list of IDs in hexadecimal format."
-    )
-
-    input (
+      type: "text",
       name: "requestedGroup2",
       title: "Association Group 2 Members (Max of 5):",
-      type: "text",
+      description: "<br/>Devices in group 2 will turn on/off when the switch is turned on or off.<br/><br/>" +
+                   "Devices are entered as a comma delimited list of IDs in hexadecimal format.",
       required: false
     )
 
     input (
+      type: "text",
       name: "requestedGroup3",
       title: "Association Group 3 Members (Max of 4):",
-      type: "text",
+      description: "<br/>Devices in group 3 will turn on/off when the switch is double tapped up or down.<br/><br/>" +
+                   "Devices are entered as a comma delimited list of IDs in hexadecimal format.",
       required: false
-    )
-
-    input ( 
-      type: "paragraph", 
-      element: "paragraph", 
-      title: "Logging", 
-      description: ""
-    )
+    )    
 
     input (
       name: "logEnable", 
@@ -174,7 +155,7 @@ def configure() {
   commands << zwave.associationV2.associationRemove(groupingIdentifier:2, nodeId:zwaveHubNodeId).format()
   commands << zwave.associationV2.associationSet(groupingIdentifier:3, nodeId:zwaveHubNodeId).format()
 
-  delayBetween commands, 1000
+  delayBetween commands, 500
 }
 
 /** -------------------------------------------------------------------------------------------------------------------
@@ -266,12 +247,9 @@ def refresh() {
 def updated() {
   log "INFO", "Configuration Updated"
   log "WARN", "Debug logging is: ${logEnable == true}"
-  log "WARN", "Description logging is: ${txtEnable == true}"
 
   // Turn logging off again after 30 minutes
-  if (logEnable) {
-    runIn 1800, turnDebugLogsOff
-  }
+  if (logEnable) runIn 1800, turnDebugLogsOff
 
   sendEvent(name: "numberOfButtons", value: 2)
 
@@ -302,21 +280,16 @@ def updated() {
     state.currentGroup3 = settings.requestedGroup3
   }
 
-  // Set LED param
-  if (paramLED==null) {
-    paramLED = 0
-  }
-
   commands << zwave.configurationV2.configurationSet(scaledConfigurationValue: paramLED.toInteger(), parameterNumber: 3, size: 1).format()
   commands << zwave.configurationV2.configurationGet(parameterNumber: 3).format()
-
-  // Set Inverted param
-  if (paramInverted==null) {
-    paramInverted = 0
-  }
-
   commands << zwave.configurationV2.configurationSet(scaledConfigurationValue: paramInverted.toInteger(), parameterNumber: 4, size: 1).format()
   commands << zwave.configurationV2.configurationGet(parameterNumber: 4).format()
+
+	// Set Inverted param
+	if (paramInverted==null) paramInverted = 0
+  
+  // Set LED param
+  if (paramLED==null) paramLED = 0
   
   delayBetween commands, 1000
 }
@@ -365,6 +338,9 @@ private parseAssocGroupList(list, group) {
   nodes
 }
 
+/** -------------------------------------------------------------------------------------------------------------------
+  * Request a version report from the device
+  * ---------------------------------------------------------------------------------------------------------------- */
 def getVersionReport(){
 	return zwave.versionV1.versionGet().format()
 }
@@ -499,10 +475,10 @@ def zwaveEvent(hubitat.zwave.commands.versionv3.VersionReport cmd) {
 }
 
 def zwaveEvent(hubitat.zwave.commands.hailv1.Hail cmd) {
-  log "WARN", "Hail command received..."
+  log "DEBUG", "Hail V1: ${cmd}"
   [name: "hail", value: "hail", descriptionText: "Switch button was pressed", displayed: false]
 }
 
 def zwaveEvent(hubitat.zwave.Command cmd) {
-    log "WARN", "Received unhandled command: ${cmd}"
+  log "WARN", "Received unhandled command: ${cmd}"
 }
